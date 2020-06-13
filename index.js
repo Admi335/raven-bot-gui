@@ -1,4 +1,4 @@
-/* This program is a Discord bot made using discord.js
+/* This program is a Discord bot made using discord.js, Discord API implementation for node.js.
  * Copyright (C) 2020 Adam Říha
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,71 +21,67 @@
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const client = new Discord.Client();
-const Command = require('./command.js');
 
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log('Ready!');
+    client.user.setActivity("Kontrola soudruhů", {type: 'CUSTOM_STATUS'});
 });
-/*
-let y = process.openStdin()
-y.addListener("data", res => {
-    let x = res.toString().trim().split(/ +/g);
-    client.channels.send(x.join(" "));
+client.once('reconnecting', () => {
+    console.log('Reconnecting!');
 });
-*/
+client.once('disconnect', () => {
+    console.log('Disconnected!');
+});
 
-//const commands = [{"kick", "kick an user from the server", `${prefix}kick @user`}];
-
-client.on('message', message => {
+client.on('message', async message => {
     message.content = message.content.toLowerCase();
-    if (message.member.hasPermission('ADMINISTRATOR'))
-    {
-        if (message.content.startsWith("prefix"))
-        {
-            message.channel.send("My prefix here is $");
-        }
-    }
 
-    if (message.content.startsWith(`${prefix}commands`))
-    {
-
-    }
-
+    const prefixes = ["prefix", "!prefix", "-prefix", "$prefix", "&prefix"];
+    prefixes.forEach(function(prefixArr) {
+      if (message.content.startsWith(prefixArr))
+          message.channel.send(`Můj prefix je ${prefix}\nPoužití: ${prefix}command (argument)`);
+    });
+    
     if (message.member.hasPermission(['KICK_MEMBERS', 'BAN_MEMBERS']))
     {
         if (message.content.startsWith(`${prefix}kick`))
         {
             let member = message.mentions.members.first();
             member.kick().then((member) => {
-                message.channel.send("S Tuxem, " + member.displayName + " :wave:");
+                message.channel.send("Uživatel " + member.displayName + " byl vyhozen :wave:");
             });
         }
         
+        if (message.content.startsWith(`${prefix}ban`))
+        {
+            let member = message.mentions.members.first();
+            member.ban().then((member) => {
+                message.channel.send("Uživatel " + member.displayName + " byl zabanován :wave:");
+            });
+        }
     }
 
     const greetings = ["ahoj", "zdravím", "čest", "Здравствуйте", "Здравствуй", "čau", "čus"];
     greetings.forEach(function(greeting) {
         if (message.content.startsWith(greeting))
         {
-            /*if (message.member.user.)
-                message.channel.send("Drž hubu");*/
             if (message.author.id === '395250596975738880')
-                message.channel.send(":wave: Buď zdráv, můj vůdče!");
+                message.reply(":wave: Buď zdráv, můj vůdče!");
 
             else
-                message.channel.send(":wave: Здравствуйте, товарищи!");
+                message.reply(":wave: Здравствуйте, товарищи!");
         }
     });
 
-    const rozlouceni = ["Sbohem", "Tak zatím"];
+    const rozlouceni = ["sbohem", "tak zatím"];
     rozlouceni.forEach(function(i) {
         if (message.content.startsWith(i))
         {
             if (message.author.id === '395250596975738880')
-                message.channel.send(":wave: Sbohem, můj vůdče!");
+                message.reply(":wave: Sbohem, můj vůdče!");
 
             else
-                message.channel.send(":wave: До свидания, товарищиS!");
+                message.reply(":wave: До свидания, товарищиS!");
         }
     });
 });
