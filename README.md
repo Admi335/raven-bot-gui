@@ -7,7 +7,14 @@ This program is a discord bot, made using a module for Node.js, discord.js, that
 ### Prerequisites
 
 The list of software you need to install to launch the bot.
-You can check if Node.js is installed by typing in the terminal or the cmd this command: "node -v".
+You can check if Node.js is installed on your computer by typing in the terminal or the cmd this command: "node -v". If it outputs something like this: 
+
+```
+$ node -v
+v14.3.0
+```
+
+Node.js is installed on your computer and you can skip this part.
 
 #### Linux
 
@@ -85,20 +92,20 @@ npm init
 npm install discord.js ffmpeg fluent-ffmpeg @discordjs/opus ytdl-core --save
 ```
 
-5. Delete all the files except for the node_modules directory
+5. Delete all the files except for the node_modules directory (You can enter "rm *.json" in either Linux or macOS terminal, howerer it's better to enter "rm -v *.json" in the Linux terminal and "rm -i *.json" in the macOS terminal.)
 
 ```
 // Linux
 rm -v *.json
 
 // macOS
-rm *.json
+rm -i *.json
 
 // Windows
 del *.json
 ```
 
-6. Put this project's files in the folder
+6. Clone or unzip this project's files in the folder
 
 ```
 // If you have git installed
@@ -107,56 +114,41 @@ git clone https://github.com/Admi335/Discord-bot.git
 // otherwise unzip it with an unzip program
 ```
 
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
+To deploy the bot go to this website: https://discord.com/developers/applications, sign in or sign up, create a new application and set the application up. Then go to this website: https://discordapi.com/permissions.html, tick what you need, fill in the Client ID, which can be obtained form the applications page, and add the bot to your Discord server.
+
+###
+
+After all of that, enter this into the terminal or cmd:
+
+###
+
+1. Change the directory to where you have the files from this repo
+
+```
+cd [path to the directory]
+```
+
+2. Start Node.js
+
+```
+node index.js
+```
+
+###
+
+The bot should become online and working.
 
 ## Built With
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+* [Node.js](https://nodejs.org/en/) - JavaScript runtime environment
+* [discord.js](https://discord.js.org/#/) - Node.js module used for interacting with the Discord API
 
 ## Authors
 
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+* **Adam Říha** - *Initial work* - [Admi335](https://github.com/Admi335)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+This project is licensed under the GPLv2 License - see the [LICENSE](LICENSE) file for details
