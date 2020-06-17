@@ -42,7 +42,7 @@ function poslatDoGulagu(member, reason) {
 client.on('message', async message => {
     message.content = message.content.toLowerCase();
 
-    if (message.channel.id !== '721699440372744192' || message.channel.id !== '721622388277510165' || !message.member.roles.cache.has('721266865279860824') || !message.member.roles.cache.has('721056101642272830'))
+    if (message.channel.id !== '721699440372744192' || message.channel.id !== '721622388277510165' || !message.member.roles.cache.find(role => role.id =='721266865279860824') || !message.member.roles.cache.find(role => role.id == '721056101642272830'))
     {
         const swears = ["fuck", "nigga", "nigger", "negr", "píča", "kunda", "kokot", "čůrák"];
         swears.forEach(function(swear) {
@@ -67,7 +67,7 @@ client.on('message', async message => {
             {
                 let member = message.mentions.members.first();
 
-                if (!member.guild.roles.cache.has('721719328013156463'))
+                if (!member.guild.roles.cache.find(role => role.id == '721719328013156463'))
                 {
                     if (Math.floor(Math.random() * 10) < 8)
                     {
@@ -90,7 +90,7 @@ client.on('message', async message => {
             {
                 let member = message.mentions.members.first();
                     
-                if (member.guild.roles.cache.has('721719328013156463'))
+                if (member.guild.roles.cache.find(role => role.id == '721719328013156463'))
                 {
                     if (Math.floor(Math.random() * 10) < 5)
                     {
@@ -130,12 +130,12 @@ client.on('message', async message => {
         {
             if (message.content.startsWith(`${prefix}dozahraničí`))
             {
-                if (!message.member.roles.cache.has('721719328013156463'))
+                if (!message.member.roles.cache.find(role => role.id == '721719328013156463'))
                 {
-                    if (message.member.roles.cache.has('720729222162808832'))
+                    if (message.member.roles.cache.find(role => role.id == '720729222162808832'))
                     {
                         message.member.roles.add('721719328013156463');
-                        message.channel.reply(" odcestoval do zahraničí.");
+                        message.channel.send(`<@${message.member.id}> odcestoval do zahraničí.`);
                     }
                     else if (Math.floor(Math.random() * 10 < 4))
                     {
@@ -161,12 +161,12 @@ client.on('message', async message => {
         {
             if (message.content.startsWith(`${prefix}zezahraničí`))
             {
-                if (message.member.roles.cache.has('721719328013156463'))
+                if (message.member.roles.cache.find(role => role.id == '721719328013156463'))
                 {
-                    if (message.member.roles.cache.has('720729222162808832'))
+                    if (message.member.roles.cache.find(role => role.id == '720729222162808832'))
                     {
                         message.member.roles.remove('721719328013156463');
-                        message.channel.reply(" přicestoval zpět ze zahraničí.");
+                        message.channel.send(`<@${message.member.id}> přicestoval zpět ze zahraničí.`);
                     }
                     else
                     {
@@ -214,7 +214,7 @@ client.on('message', async message => {
         });
     }
 
-    if (message.member.roles.cache.has('721266865279860824'))
+    if (message.member.roles.cache.find(role => role.id == '721266865279860824'))
     {
         if (message.channel.id === '721795206424559668')
         {
