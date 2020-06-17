@@ -17,7 +17,7 @@
  * 
  * You can contact me, the creator of this program, via this email address: rihaadam1@seznam.cz
  */
-
+// Ahoj GIT
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const client = new Discord.Client();
