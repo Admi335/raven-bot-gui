@@ -130,7 +130,16 @@ After all of that, enter this into the terminal or cmd:
 cd [path to the directory]
 ```
 
-2. Start Node.js
+2. Create a config.json file and put your bot's token and prefix of your choice in it. The config.json file without prefix and token should look like this:
+
+```
+{
+    "prefix": "",
+    "token": ""
+}
+```
+
+3. Start Node.js
 
 ```
 node index.js
