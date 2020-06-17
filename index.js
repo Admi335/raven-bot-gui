@@ -17,7 +17,7 @@
  * 
  * You can contact me, the creator of this program, via this email address: rihaadam1@seznam.cz
  */
-// Ahoj GIT
+
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 const client = new Discord.Client();
@@ -44,14 +44,14 @@ client.on('message', async message => {
 
     if (message.channel.id !== '721699440372744192' || message.channel.id !== '721622388277510165' || !message.member.roles.cache.find(role => role.id =='721266865279860824') || !message.member.roles.cache.find(role => role.id == '721056101642272830'))
     {
-        const swears = ["fuck", "nigga", "nigger", "negr", "píča", "kunda", "kokot", "čůrák"];
+        const swears = ["fuck", "nigga", "nigger", "negr", "píča", "kunda", "kokot", "čůrák", "zmrd", "debil"];
         swears.forEach(function(swear) {
             if (message.content.includes(swear) && message.author.id !== '395250596975738880')
             {
                 message.delete();
-                message.channel.send("Zpráva uživatele <@" + message.author.id + "> byla cenzurována.\nDůvod: zakázaná slova");
+                message.channel.send("Zpráva uživatele <@" + message.member.id + "> byla cenzurována.\nDůvod: zakázaná slova");
                 message.channel.send("<:FeelsOkayMan:720679806445944862>");
-                message.author.send("Byl jsi varován!\nUž nepiš zakázaná slova nebo dostaneš permanentní ban!");
+                message.member.send("Byl jsi varován!\nUž nepiš zakázaná slova nebo dostaneš permanentní ban!");
             }
         });
 
@@ -189,27 +189,27 @@ client.on('message', async message => {
             message.channel.send("<:FeelsOkayMan:720679806445944862>");
         }
 
-        const greetings = ["ahoj", "zdravím", "čest", "Здравствуйте", "Здравствуй", "čau", "čus"];
+        const greetings = ["ahoj", "zdravím", "čest", "Здравствуйте", "Здравствуй", "čau", "čus", "zdar"];
         greetings.forEach(function(greeting) {
-            if (message.content.startsWith(greeting))
+            if (message.content.includes(greeting))
             {
-                if (message.author.id === '395250596975738880')
-                    message.reply(":wave: Buď zdráv, můj vůdče!");
+                if (message.member.id === '395250596975738880')
+                    message.channel.send(`:wave: ${greeting[0].toUpperCase() + greeting.substr(1)}, můj vůdče!`);
 
-                else
-                    message.reply(":wave: Здравствуйте, товарищи!");
-            }
+                else if (message.member.id !== '720678047593922670')
+                    message.channel.send(`:wave: ${greeting[0].toUpperCase() + greeting.substr(1)}, <@${message.member.id}>!`);
+            } /*товарищи*/
         });
 
-        const rozlouceni = ["sbohem", "tak zatím"];
+        const rozlouceni = ["sbohem", "tak zatím", "До свидания"];
         rozlouceni.forEach(function(i) {
-            if (message.content.startsWith(i))
+            if (message.content.includes(i))
             {
-                if (message.author.id === '395250596975738880')
-                    message.reply(":wave: Sbohem, můj vůdče!");
+                if (message.member.id === '395250596975738880')
+                    message.channel.send(`:wave: ${i[0].toUpperCase() + i.substr(1)}, můj vůdče!`);
 
-                else
-                    message.reply(":wave: До свидания, товарищиS!");
+                else if (message.member.id !== '720678047593922670')
+                    message.channel.send(`:wave: ${i[0].toUpperCase() + i.substr(1)}, <@${message.member.id}>!`);
             }
         });
     }
