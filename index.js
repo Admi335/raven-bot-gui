@@ -44,7 +44,7 @@ client.on('message', async message => {
 
     if (message.channel.id !== '721699440372744192' || message.channel.id !== '721622388277510165' || !message.member.roles.cache.find(role => role.id =='721266865279860824') || !message.member.roles.cache.find(role => role.id == '721056101642272830'))
     {
-        const swears = ["fuck", "nigga", "nigger", "negr", "píča", "kunda", "kokot", "čůrák", "zmrd", "debil"];
+        const swears = ["hej", "spíš", "fuck", "nigga", "nigger", "negr", "píča", "kunda", "kokot", "čůrák", "zmrd", "debil"];
         swears.forEach(function(swear) {
             if (message.content.includes(swear) && message.author.id !== '395250596975738880')
             {
@@ -212,6 +212,20 @@ client.on('message', async message => {
                     message.channel.send(`:wave: ${i[0].toUpperCase() + i.substr(1)}, <@${message.member.id}>!`);
             }
         });
+        
+        if (message.content.includes("dobrou"))
+        {
+            if (message.member.id === '395250596975738880')
+            {
+                message.channel.send("Dobrou noc, můj vůdče!");
+                message.channel.send("<:peepoBlanket:723273032205860964>");
+            }
+            else if (message.member.id !== '720678047593922670')
+            {
+                message.channel.send(`Dobrou noc, <@${message.member.id}>!`);
+                message.channel.send("<:peepoBlanket:723273032205860964>");
+            }
+        }
     }
 
     if (message.member.roles.cache.find(role => role.id == '721266865279860824'))
