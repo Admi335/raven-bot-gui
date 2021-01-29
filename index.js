@@ -1,5 +1,5 @@
-/* This program is a Discord bot made using discord.js, Discord API implementation for node.js
- * Copyright (C) 2020 Adam Říha
+/* This program is a Discord bot made using discord.js, a Discord API implementation for node.js
+ * Copyright (C) 2021 Adam Říha
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,7 @@ const { prefix, token } = require('./config.json');
 const client = new Discord.Client();
 
 client.once('ready', async () => {
-    console.log('Ready!');
-    client.user.setActivity("Kontrola soudruhů", {type: 'WATCHING'});
+    console.log('Connected!');
 });
 client.once('reconnecting', () => {
     console.log('Reconnecting!');
@@ -39,21 +38,86 @@ function poslatDoGulagu(member, reason) {
     member.setNickname(reason);
 }
 
+/* --------------------------------------------------------------------------*/
+
+/*
+ * Arguments:
+ *      array - banned words
+ * 
+ * Actions:
+ *      Checks if a message contains a banned word
+ *      Deletes the message
+ * 
+ * Usage:
+ *      bannedWords(words)
+ *      ------------------
+ *      (function) | (banned words)
+ */
+
+function deleteMsg(authorId, channelAlert, reason, authorAlert) {
+    message.delete();
+    
+    message.channel.send(channelAlert);
+    message.channel.send(`Reason: ${reason}`);
+    
+    message.member.send(authorAlert);
+}
+
+/* --------------------------------------------------------------------------*/
+
+/*
+ * Arguments:
+ *      array - banned words
+ *      array - exceptional users
+ * 
+ * Actions:
+ *      Checks if the author can send banned words
+ *      Checks if the message contains a banned word
+ *      Deletes the message
+ * 
+ * Usage:
+ *      bannedWords(words, usersException)
+ *      ------------------
+ *      function name | banned words | exceptional users
+ */
+
+function bannedWords(words, userExceptions) {
+    userExceptions.forEach(function(exception) {
+        if (message.author.id == exception)
+            return;
+    });
+    
+    words.forEach(function(word) {
+        if (message.content.includes(word) &&  // If message includes a banned word
+            message.content[message.content.indexOf(word) - 1] != ' ' &&  // and there's nothing before
+            message.content[message.content.indexOf(word) + word.length] != ' ') {  // nor after
+/* Then */  deleteMsg(authorId, channelAlert, reason, authorAlert);
+        }
+    });
+}
+
+/* --------------------------------------------------------------------------*/
+
 client.on('message', async message => {
-    message.content = message.content.toLowerCase();
+    message.content = message.content.toLowerCase().trim();
+    
+    let swears = ["hej", "spíš", "fuck", "nigga", "nigger", "negr", "píča", "kunda", "kokot", "čůrák", "zmrd", "debil"];
+    bannedWords(swears);
 
     if (message.channel.id !== '721699440372744192' || message.channel.id !== '721622388277510165' || !message.member.roles.cache.find(role => role.id =='721266865279860824') || !message.member.roles.cache.find(role => role.id == '721056101642272830'))
-    {
+    {/*
         const swears = ["hej", "spíš", "fuck", "nigga", "nigger", "negr", "píča", "kunda", "kokot", "čůrák", "zmrd", "debil"];
         swears.forEach(function(swear) {
             if (message.content.includes(swear) && message.author.id !== '395250596975738880')
             {
-                message.delete();
-                message.channel.send("Zpráva uživatele <@" + message.member.id + "> byla cenzurována.\nDůvod: zakázaná slova");
-                message.channel.send("<:FeelsOkayMan:720679806445944862>");
-                message.member.send("Byl jsi varován!\nUž nepiš zakázaná slova nebo dostaneš permanentní ban!");
+                message.delete();  // Delete the message
+                
+                message.channel.send("Zpráva uživatele <@" + message.member.id + "> byla cenzurována.\nDůvod: zakázaná slova");  // Send alert to the channel
+                message.channel.send("<:FeelsOkayMan:720679806445944862>");  // Send an emote to the channel
+                
+                message.member.send("Byl jsi varován!\nUž nepiš zakázaná slova nebo dostaneš permanentní ban!");  // Send alert to the user
             }
-        });
+        });*/
 
         const prefixes = ["", "!", "/", "-", "$", "&"];
         prefixes.forEach(function(prefixArr) {
