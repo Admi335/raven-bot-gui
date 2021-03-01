@@ -78,14 +78,6 @@ mkdir [folder's name]
 cd [folder's name]
 ```
 
-3. Initialize your node project
-
-```
-npm init
-
-// After entering the command, hit enter a few times and you will exit the program
-```
-
 4. Install the modules
 
 ```
