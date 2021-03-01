@@ -1,6 +1,4 @@
-const { Message } = require("discord.js")
-
-module.exports = function (message) {
+module.exports = message => {
 
     message.delete();
 

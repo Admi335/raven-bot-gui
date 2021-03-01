@@ -1,7 +1,7 @@
 const sendMsg = require('./sendMsg');
 const deleteMsg = require('./deleteMsg');
 
-module.exports = function (message, bannedPhrases, deleteBool = true, banBool = false) {
+module.exports = (message, bannedPhrases, deleteBool = true, banBool = false) => {
 
     const content = message.content;
     console.log(content);

@@ -1,4 +1,4 @@
-module.exports = function (content, location) {
+module.exports = (content, location) => {
 
     location.send(content);
 
