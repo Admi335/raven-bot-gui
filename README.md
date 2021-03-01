@@ -89,7 +89,7 @@ npm init
 4. Install the modules
 
 ```
-npm install discord.js ffmpeg fluent-ffmpeg @discordjs/opus ytdl-core --save
+npm install discord.js
 ```
 
 5. Delete all the files except for the node_modules directory (You can enter "rm *.json" in either Linux or macOS terminal, howerer it's better to enter "rm -v *.json" in the Linux terminal and "rm -i *.json" in the macOS terminal.)
