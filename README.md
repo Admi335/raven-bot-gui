@@ -66,44 +66,26 @@ It's almost all the same for every operating system.
 For Linux you can use the terminal of your distro, for macOS you can use the macOS' terminal and for Windows you can use the cmd.
 Or you can use any other terminal like XTerm (for Linux) or Windows subsytem for Linux (for Windows - in VS Code).
 
-1. Create a folder wherever you want
 
-```
-mkdir [folder's name]
-```
-
-2. Change the directory to the folder you just created
+1. Change the directory to the folder where you want to clone this repository
 
 ```
 cd [folder's name]
 ```
 
-4. Install the modules
-
-```
-npm install discord.js
-```
-
-5. Delete all the files except for the node_modules directory (You can enter "rm *.json" in either Linux or macOS terminal, howerer it's better to enter "rm -v *.json" in the Linux terminal and "rm -i *.json" in the macOS terminal.)
-
-```
-// Linux
-rm -v *.json
-
-// macOS
-rm -i *.json
-
-// Windows
-del *.json
-```
-
-6. Clone or unzip this project's files in the folder
+2. Clone or unzip this repository's files in the folder
 
 ```
 // If you have git installed
 git clone https://github.com/Admi335/Discord-bot.git
 
 // otherwise unzip it with an unzip program
+```
+
+3. Install the modules
+
+```
+npm install discord.js
 ```
 
 ## Deployment
