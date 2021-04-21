@@ -25,8 +25,14 @@ const client = new Discord.Client();
 
 const sendMsg = require('./src/sendMsg');
 const deleteMsg = require('./src/deleteMsg');
-const banPhrases = require('./src/banPhrases');
 
+
+// BOT SETTINGS
+const deletePhrases = true;  // Delete message if it includes a banned phrase
+const banForPhrases = false; // Ban user if his message includes a banned phrase
+const bannedPhrases = [
+    // Insert banned phrases here
+];
 
 
 client.once('ready', async () => {
@@ -42,17 +48,25 @@ client.once('disconnect', () => {
 });
 
 
-const bannedPhrases = [
-    // insert banned phrases here
-];
-
-
 client.on('message', message => {
     const channel = message.channel;
     const content = message.content.toLowerCase().trim();
 
-
-    banPhrases(message, bannedPhrases);
+    bannedPhrases.forEach(phrase => {
+        if (content.includes(phrase)) {
+            if ((content[content.indexOf(phrase) - 1] == ' ' ||
+                !content[content.indexOf(phrase) - 1])
+                &&
+                (content[content.indexOf(phrase) + phrase.length] == ' ' ||
+                !content[content.indexOf(phrase) + phrase.length])) {
+                    if (deletePhrases)
+                        deleteMsg(message);
+                
+                    if (banForPhrases)
+                        //ban(author); // Ban function not implemented, yet
+            }
+        }
+    });
 
     if (content == "prefix")
         sendMsg(`My prefix is ${prefix}`, channel);
