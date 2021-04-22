@@ -11,7 +11,7 @@ You can check if Node.js is installed on your computer by typing in the terminal
 
 ```
 $ node -v
-v14.3.0
+v15.14.0
 ```
 
 Node.js is installed on your computer and you can skip this part.
@@ -61,7 +61,7 @@ https://nodejs.org/en/download/package-manager/
 
 ### Installing
 
-A step by step installation guide for launching the bot using the terminal.
+A step by step installation guide for installing the bot using the terminal.
 It's almost all the same for every operating system.
 For Linux you can use the terminal of your distro, for macOS you can use the macOS' terminal and for Windows you can use the cmd.
 Or you can use any other terminal like XTerm (for Linux) or Windows subsytem for Linux (for Windows - in VS Code).
@@ -115,10 +115,24 @@ cd [path to the directory]
 }
 ```
 
-3. Start Node.js
+3. (Optional) If you want to, you can create a text file with a list of blacklisted phrases called 'phrases_blacklist.txt'
 
 ```
-node index.js
+touch phrases_blacklist.txt
+```
+
+There you can include phrases that you want to be blacklisted. Each phrase has to be on its own line. Here is an example of how the file can look like:
+
+```
+!-- This is a comment
+bad word
+another bad word
+```
+
+4. Start the bot
+
+```
+npm run start
 ```
 
 ###
