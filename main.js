@@ -100,10 +100,10 @@ client.on('message', message => {
                 (content[content.indexOf(phrase) + phrase.length] == ' ' ||
                 !content[content.indexOf(phrase) + phrase.length])) {
                     if (deletePhrases)
-                        deleteMsg(message);
+                        deleteMsg(message, `You wrote some bad words! ${author}`, channel);
                 
-                    if (banForPhrases)
-                        ban(author, `You wrote some bad words! ${author}`, author);
+                    else if (banForPhrases)
+                        banUser(author, `You wrote some bad words! ${author}`, author);
             }
         }
     });
