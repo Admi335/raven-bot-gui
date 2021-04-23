@@ -139,6 +139,9 @@ npm run start
 
 The bot should become online and working.
 
+To access the GUI, open your web browser and paste in this address: 127.0.0.1:3000
+If the address is not working, check the node console for the correct address.
+
 ## Built With
 
 * [Node.js](https://nodejs.org/en/) - JavaScript runtime environment
