@@ -1,11 +1,11 @@
-const sendMsg = require('./sendMsg');
+const sendMsg = require('./sendMsg.js');
 
-module.exports = (message, reason = "", reasonLocation) => {
+module.exports = (message, reason, reasonLocation) => {
 
     message.delete();
 
     reason.trim();
-    if (reason != "")
+    if (reason && reason != "")
         sendMsg(reason, reasonLocation);
         
 }

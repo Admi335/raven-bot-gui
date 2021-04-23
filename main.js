@@ -30,8 +30,12 @@ const client = new Discord.Client();
 
 
 // Scripts
-const sendMsg = require('./src/sendMsg');
-const deleteMsg = require('./src/deleteMsg');
+const findSubstring = require('./src/findSubstring.js');
+
+const sendMsg = require('./src/sendMsg.js');
+const deleteMsg = require('./src/deleteMsg.js');
+
+const banUser = require('./src/banUser.js');
 
 
 // BOT SETTINGS
@@ -55,7 +59,7 @@ rl.on('line', line => {
     }
 });
 
-const maxLength = 256; // Maximum amount of characters in a message
+const maxLength = 255; // Maximum amount of characters in a message
                        // In case you don't want to have a limit, set this to -1
 
 
@@ -82,7 +86,7 @@ client.once('disconnect', () => {
 client.on('message', message => {
     const channel = message.channel;
     const content = message.content.trim();
-    const author = message.author;
+    const author = message.member;
 
     if (content.length >= maxLength && maxLength != -1) {
         deleteMsg(message, `Your message is too long! ${author}`, channel);
@@ -98,56 +102,39 @@ client.on('message', message => {
                     if (deletePhrases)
                         deleteMsg(message);
                 
-                    //if (banForPhrases)
-                        //ban(author); // Ban function not implemented, yet
+                    if (banForPhrases)
+                        ban(author, `You wrote some bad words! ${author}`, author);
             }
         }
     });
-
+    
     if (content.toLowerCase() == "prefix")
         sendMsg(`My prefix is ${prefix}`, channel);
 
+
     if (content.startsWith(prefix)) {
         let command = content.slice(prefix.length);
+        let targetUser = message.mentions.members.first();
+        let targetString = findSubstring(command);
+        let targetChannel = message.mentions.channels.first();
 
         for (let i = 0; i < command.length; i++) {
             if (command[i] == " " || !command[i]) break;
             command[i].toLowerCase();
         }
 
+        if (command.startsWith("ban")) {
+            banUser(targetUser, targetString, targetChannel);
+        }
+
         if (command.startsWith("send")) {
-            function findQuotes(quote = "\"") {
-                let msgI = command.indexOf(quote);
-                let msgEnd;
-
-                if (msgI != -1) {
-                    for (let i = msgI; i < command.length; i++)
-                    {
-                        if (command[i] == quote && command[i - 1] != "\\")
-                            msgEnd = i;
-                    }
-
-                    return [msgI + 1, msgEnd];
-                }
-
-                if (msgI == -1 || msgEnd == -1) {
-                    if (quote == "\"") {
-                        return findQuotes("'");
-                    }
-
-                    else {
-                        sendMsg("Syntax error! You have to write your message inside of \"\" or ''", channel);
-                        return undefined;
-                    }
-                }
+            if (!targetString || targetString.length == 0) {
+                sendMsg(`[ERROR] You must write your message inside of two " or ', and your message cannot be empty. ${author}`, channel);
+                return;
             }
 
-            let msgIs = findQuotes();
-            if (!msgIs) return;
-
-            let msg = command.substring(msgIs[0], msgIs[1]);
-            let msgLocation = message.mentions.channels.first();
-            sendMsg(msg, msgLocation);
+            if (targetChannel) sendMsg(targetString, targetChannel);
+            else               sendMsg(targetString, channel);
         }
     }
 });
