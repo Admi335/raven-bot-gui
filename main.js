@@ -27,6 +27,29 @@ const findSubstring = require('./src/findSubstring.js');
 const sendMsg = require('./src/sendMsg.js');
 
 
+/*----------------------------------------------------*/
+/*-------------------- WEB SERVER --------------------*/
+/*----------------------------------------------------*/
+
+const express = require('express');
+const http = require('http');
+const app = new express();
+
+const hostname = '127.0.0.1';
+const port = process.env.PORT || 3000;
+const server = http.createServer(app);
+
+app.use(express.static('./'));
+
+app.get('/', (req, res) => {
+    res.sendFile('index.html');
+});
+
+server.listen(port, hostname, () => {
+    console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+
 /*-----------------------------------------------------*/
 /*-------------------- DISCORD BOT --------------------*/
 /*-----------------------------------------------------*/
