@@ -18,10 +18,18 @@
  * You can contact me, the creator of this program, via this email address: rihaadam1@seznam.cz
  */
 
-// Node
 const fs = require('fs');
-const readline = require('readline');
+const readline = require('readline'); 
 
+const banUser = require('./src/banUser.js');
+const deleteMsg = require('./src/deleteMsg.js');
+const findSubstring = require('./src/findSubstring.js');
+const sendMsg = require('./src/sendMsg.js');
+
+
+/*-----------------------------------------------------*/
+/*-------------------- DISCORD BOT --------------------*/
+/*-----------------------------------------------------*/
 
 // Discord
 const Discord = require('discord.js');
@@ -29,16 +37,7 @@ const { prefix, token } = require('./config.json');
 const client = new Discord.Client();
 
 
-// Scripts
-const findSubstring = require('./src/findSubstring.js');
-
-const sendMsg = require('./src/sendMsg.js');
-const deleteMsg = require('./src/deleteMsg.js');
-
-const banUser = require('./src/banUser.js');
-
-
-// BOT SETTINGS
+// Bot settings
 const deletePhrases = true;  // Delete message if it includes a blacklisted phrase
 const banForPhrases = false; // Ban user if his message includes a blacklisted phrase
 const blacklistedPhrases = [];
