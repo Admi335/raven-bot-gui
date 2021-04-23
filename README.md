@@ -85,7 +85,7 @@ git clone https://github.com/Admi335/Discord-bot.git
 3. Install the modules
 
 ```
-npm install discord.js
+npm install express discord.js
 ```
 
 ## Deployment
