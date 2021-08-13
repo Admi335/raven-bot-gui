@@ -54,7 +54,7 @@ rl.on('line', line => {
 
     if (!line.startsWith("!--")) {
         console.log(line);
-        blacklistedPhrases.push(line);
+        blacklistedPhrases.push(line.toLowerCase());
     }
 });
 
