@@ -9,7 +9,7 @@ This program is a discord bot, made using a module for Node.js, discord.js, that
 The list of software you need to install to launch the bot.
 You can check if Node.js is installed on your computer by typing in the terminal or the cmd this command: "node -v". If it outputs something like this: 
 
-```
+```bash
 $ node -v
 v15.14.0
 ```
@@ -20,27 +20,27 @@ Node.js is installed on your computer and you can skip this part.
 
 1. node.js
 
-```
-// Ubuntu
+```bash
+# Ubuntu
 sudo apt-get install nodejs
 
-// Fedora
+# Fedora
 sudo dnf install nodejs
 
-// Arch linux
+# Arch linux
 sudo pacman -S nodejs
 ```
 
 2. npm
 
-```
-// Ubuntu
+```bash
+# Ubuntu
 sudo apt-get install npm
 
-// Fedora
-// npm is already part of the Node.js package
+# Fedora
+# npm is already part of the Node.js package
 
-// Arch linux
+# Arch linux
 sudo pacman -S npm
 ```
 
@@ -48,10 +48,10 @@ sudo pacman -S npm
 
 1. node.js & npm
 
-```
+```bash
 curl "https://nodejs.org/dist/latest/node-${VERSION:-$(wget -qO- https://nodejs.org/dist/latest/ | sed -nE 's|.*>node-(.*)\.pkg</a>.*|\1|p')}.pkg" > "$HOME/Downloads/node-latest.pkg" && sudo installer -store -pkg "$HOME/Downloads/node-latest.pkg" -target "/"
 
-// or
+# or
 
 brew install node
 ```
@@ -69,22 +69,22 @@ Or you can use any other terminal like XTerm (for Linux) or Windows subsytem for
 
 1. Change the directory to the folder where you want to clone this repository
 
-```
+```bash
 cd [folder's name]
 ```
 
 2. Clone or unzip this repository's files in the folder
 
-```
-// If you have git installed
+```bash
+# If you have git installed
 git clone https://github.com/Admi335/Discord-bot.git
 
-// otherwise unzip it with an unzip program
+# otherwise unzip it with an unzip program
 ```
 
 3. Install the modules
 
-```
+```bash
 npm install discord.js
 ```
 
@@ -102,13 +102,13 @@ After all of that, enter this into the terminal or cmd:
 
 1. Change the directory to where you have the files from this repo
 
-```
+```bash
 cd [path to the directory]
 ```
 
 2. Create a config.json file and put your bot's token and prefix of your choice in it. The config.json file without prefix and token should look like this:
 
-```
+```json
 {
     "prefix": "",
     "token": ""
@@ -117,7 +117,7 @@ cd [path to the directory]
 
 3. (Optional) If you want to, you can create a text file with a list of blacklisted phrases called 'phrases_blacklist.txt'
 
-```
+```bash
 touch phrases_blacklist.txt
 ```
 
@@ -131,7 +131,7 @@ another bad word
 
 4. Start the bot
 
-```
+```bash
 npm run start
 ```
 
