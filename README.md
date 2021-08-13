@@ -121,7 +121,7 @@ cd [path to the directory]
 touch phrases_blacklist.txt
 ```
 
-There you can include phrases that you want to be blacklisted. Each phrase has to be on its own line. You don't have to worry about cases, the bot handles them by itself. If you don't want a certain line to be included, prefix it with a "!--". Here is an example of how the file can look like:
+There, you can include phrases that you want to be blacklisted. Each phrase has to be on its own line. You don't have to worry about cases, the bot handles them for you. If you don't want a certain line to be included, prefix it with a "!--". Here is an example of how the file can look like:
 
 ```
 !-- This is a comment
