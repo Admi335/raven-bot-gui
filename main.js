@@ -42,20 +42,29 @@ const deletePhrases = true;  // Delete message if it includes a blacklisted phra
 const banForPhrases = false; // Ban user if his message includes a blacklisted phrase
 const blacklistedPhrases = [];
 
-let rl = readline.createInterface({
-    input: fs.createReadStream('./phrases_blacklist.txt'),
-    crlfDelay: Infinity
-});
-
-console.log("Blacklisted phrases:");
-
-rl.on('line', line => {
-    line.trim();
-
-    if (!line.startsWith("!--")) {
-        console.log(line);
-        blacklistedPhrases.push(line.toLowerCase());
+fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
+    if (err) {
+        console.log("Blacklist of phrases doesn't exist");
+        return;
     }
+
+    let rl = readline.createInterface({
+        input: fs.createReadStream('./phrases_blacklist.txt'),
+        crlfDelay: Infinity
+    });
+
+    console.log("Blacklisted phrases:");
+
+    rl.input.on('error', err => {});
+
+    rl.on('line', line => {
+        line.trim();
+
+        if (!line.startsWith("!--")) {
+            console.log(line);
+            blacklistedPhrases.push(line.toLowerCase());
+        }
+    });
 });
 
 const maxLength = 255; // Maximum amount of characters in a message
