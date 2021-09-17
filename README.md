@@ -85,7 +85,7 @@ git clone https://github.com/Admi335/Discord-bot.git
 3. Install the modules
 
 ```bash
-npm install discord.js
+npm install discord.js ffmpeg fluent-ffmpeg @discordjs/opus ytdl-core
 ```
 
 ## Deployment
