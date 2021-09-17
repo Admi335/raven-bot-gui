@@ -26,6 +26,8 @@ const deleteMsg = require('./src/deleteMsg.js');
 const findSubstring = require('./src/findSubstring.js');
 const sendMsg = require('./src/sendMsg.js');
 
+const musicFuncs = require('./src/music.js');
+
 
 /*-----------------------------------------------------*/
 /*-------------------- DISCORD BOT --------------------*/
@@ -67,18 +69,11 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
     });
 });
 
-const maxLength = 255; // Maximum amount of characters in a message
-                       // In case you don't want to have a limit, set this to -1
+const maxLength = -1; // Maximum amount of characters in a message
+                      // In case you don't want to have a limit, set this to -1
 
 
 client.once('ready', () => {
-    /*client.api.applications(client.user.id).commands.post({
-        data: {
-            name: '',
-            description: ''
-        }
-    });*/
-
     console.log('\nConnected!');
 });
 
@@ -96,8 +91,15 @@ client.on('message', message => {
     const content = message.content.trim();
     const author = message.member;
 
+    const voiceChannel = message.member.voice.channel;
+    //const VCpermissions = voiceChannel.permissionsFor(message.client.user);
+
+    const serverQueue = musicFuncs.getQueue().get(message.guild.id);
+
+
     if (content.length >= maxLength && maxLength != -1) {
         deleteMsg(message, `Your message is too long! ${author}`, channel);
+        return;
     }
 
     blacklistedPhrases.forEach(phrase => {
@@ -112,15 +114,20 @@ client.on('message', message => {
                 
                     else if (banForPhrases)
                         banUser(author, `You wrote some bad words! ${author}`, author);
+
+                    return;
             }
         }
     });
+
+    if (message.author.bot) return;
     
-    if (content.toLowerCase() == "prefix")
+    if (content.toLowerCase() == "prefix") {
         sendMsg(`My prefix is ${prefix}`, channel);
+        return;
+    }
 
-
-    if (content.startsWith(prefix)) {
+    else if (content.startsWith(prefix)) {
         let command = content.slice(prefix.length);
         let targetUser = message.mentions.members.first();
         let targetString = findSubstring(command);
@@ -133,9 +140,10 @@ client.on('message', message => {
 
         if (command.startsWith("ban")) {
             banUser(targetUser, targetString, targetChannel);
+            return;
         }
 
-        if (command.startsWith("send")) {
+        else if (command.startsWith("send")) {
             if (!targetString || targetString.length == 0) {
                 sendMsg(`[ERROR] You must write your message inside of two " or ', and your message cannot be empty. ${author}`, channel);
                 return;
@@ -143,6 +151,48 @@ client.on('message', message => {
 
             if (targetChannel) sendMsg(targetString, targetChannel);
             else               sendMsg(targetString, channel);
+
+            return;
+        }
+
+
+    /* PLAYING MUSIC */
+        else if (command.startsWith("play")) {
+            if (!voiceChannel)
+                return sendMsg("You need to be in a voice channel to play music!", channel);
+        
+            musicFuncs.queueSong(message, targetString, serverQueue);
+
+            return;
+        }
+
+        else if (command.startsWith("skip")) {
+            if (!voiceChannel)
+                return sendMsg("You have to be in a voice channel to skip the music!", channel);
+
+            if (!serverQueue)
+                return sendMsg("There is no song that I could skip!", channel);
+
+            serverQueue.connection.dispatcher.end();
+
+            sendMsg(`Current song has been skipped!`, channel)
+
+            return;
+        }
+
+        else if (command.startsWith("stop")) {
+            if (!voiceChannel)
+                return sendMsg("You have to be in a voice channel to stop the music!", channel);
+
+            if (!serverQueue)
+                return sendMsg("There is no song that I could stop!", channel);
+
+            serverQueue.songs = [];
+            serverQueue.connection.dispatcher.end();
+
+            sendMsg(`Stopped playing songs!`, channel)
+
+            return;
         }
     }
 });
