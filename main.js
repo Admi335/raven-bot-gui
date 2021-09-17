@@ -31,8 +31,8 @@ const sendMsg = require('./src/sendMsg.js');
 /*-------------------- WEB SERVER --------------------*/
 /*----------------------------------------------------*/
 
-const express = require('express');
 const http = require('http');
+const express = require('express');
 const app = new express();
 
 const hostname = '127.0.0.1';
