@@ -69,8 +69,7 @@ const blacklistedPhrases = [];
 
 fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
     if (err) {
-        console.log("Blacklist of phrases doesn't exist");
-        return;
+        return console.log("Blacklist of phrases doesn't exist");
     }
 
     let rl = readline.createInterface({
@@ -80,7 +79,9 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
 
     console.log("Blacklisted phrases:");
 
-    rl.input.on('error', err => {});
+    rl.input.on('error', err => {
+        console.log("Failed to read file!\n" + err);
+    });
 
     rl.on('line', line => {
         line.trim();
@@ -96,20 +97,21 @@ const maxLength = -1; // Maximum amount of characters in a message
                       // In case you don't want to have a limit, set this to -1
 
 
+
 client.once('ready', () => {
     console.log('\nConnected!');
 });
 
 client.once('reconnecting', () => {
-    console.log('Reconnecting...');
+    console.log('\nReconnecting...');
 });
 
 client.once('disconnect', () => {
-    console.log('Disconnected!');
+    console.log('\nDisconnected!');
 });
 
 
-client.on('message', message => {
+client.on('message', async message => {
     const channel = message.channel;
     const content = message.content.trim();
     const author = message.member;
@@ -119,12 +121,12 @@ client.on('message', message => {
 
     const serverQueue = musicFuncs.getQueue().get(message.guild.id);
 
-
+    // Message length
     if (content.length >= maxLength && maxLength != -1) {
-        deleteMsg(message, `Your message is too long! ${author}`, channel);
-        return;
+        return deleteMsg(message, `Your message is too long! ${author}`, channel);
     }
 
+    // Blacklist
     blacklistedPhrases.forEach(phrase => {
         if (content.toLowerCase().includes(phrase)) {
             if ((content[content.indexOf(phrase) - 1] == ' ' ||
@@ -135,7 +137,7 @@ client.on('message', message => {
                     if (deletePhrases)
                         deleteMsg(message, `You wrote some bad words! ${author}`, channel);
                 
-                    else if (banForPhrases)
+                    if (banForPhrases)
                         banUser(author, `You wrote some bad words! ${author}`, author);
 
                     return;
@@ -143,13 +145,14 @@ client.on('message', message => {
         }
     });
 
+    // Check if author is bot
     if (message.author.bot) return;
     
-    if (content.toLowerCase() == "prefix") {
-        sendMsg(`My prefix is ${prefix}`, channel);
-        return;
-    }
+    // Send prefix
+    if (content.toLowerCase() == "prefix")
+        return sendMsg(`My prefix is ${prefix}`, channel);
 
+/* COMMANDS */
     else if (content.startsWith(prefix)) {
         let command = content.slice(prefix.length);
         let targetUser = message.mentions.members.first();
@@ -161,23 +164,16 @@ client.on('message', message => {
             command[i].toLowerCase();
         }
 
-        if (command.startsWith("ban")) {
-            banUser(targetUser, targetString, targetChannel);
-            return;
-        }
+        if (command.startsWith("ban"))
+            return banUser(targetUser, targetString, targetChannel);
 
         else if (command.startsWith("send")) {
-            if (!targetString || targetString.length == 0) {
-                sendMsg(`[ERROR] You must write your message inside of two " or ', and your message cannot be empty. ${author}`, channel);
-                return;
-            }
+            if (!targetString || targetString.length == 0)
+                return sendMsg(`[ERROR] You must write your message inside of two " or ', and your message cannot be empty. ${author}`, channel);
 
-            if (targetChannel) sendMsg(targetString, targetChannel);
-            else               sendMsg(targetString, channel);
-
-            return;
+            if (targetChannel) return sendMsg(targetString, targetChannel);
+            else               return sendMsg(targetString, channel);
         }
-
 
     /* PLAYING MUSIC */
         else if (command.startsWith("play")) {
@@ -196,8 +192,7 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could skip!", channel);
 
-            serverQueue.connection.dispatcher.end();
-
+            musicFuncs.skip(serverQueue);
             sendMsg(`Current song has been skipped!`, channel)
 
             return;
@@ -210,12 +205,49 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could stop!", channel);
 
-            serverQueue.songs = [];
-            serverQueue.connection.dispatcher.end();
-
+            musicFuncs.stop(serverQueue);
             sendMsg(`Stopped playing songs!`, channel)
 
             return;
+        }
+
+        else if (command.startsWith("queue")) {
+            if (!serverQueue) 
+                return sendMsg("There are no songs in the queue!", channel);
+            
+            let fieldValues = [];
+
+            for (let i = 0; i < serverQueue.songs.length; i++) {
+                songLen = serverQueue.songs[i].lengthSeconds;
+
+                let seconds = songLen % 60;
+                let minutes = parseInt(songLen / 60) % 60;
+                let hours = parseInt(songLen / 3600);
+
+                let songName = serverQueue.songs[i].title;
+                let songURL = serverQueue.songs[i].url;
+
+                if (songName.length > 50) fieldValues[i] = `[${songName.substr(0, 46)}](${songURL})...`;
+                else                      fieldValues[i] = `[${songName}](${songURL})`;
+
+                fieldValues[i] += ` by **${serverQueue.songs[i].author}** - `;
+
+                if (hours != 0)   fieldValues[i] += (hours.toString().length == 1 ? `0${hours}` : hours) + ":";
+                if (minutes != 0) fieldValues[i] += (minutes.toString().length == 1 && hours != 0 ? `0${minutes}` : minutes) + ":";  
+                                  fieldValues[i] += (seconds.toString().length == 1 && minutes != 0 ? `0${seconds}` : seconds);
+            }
+            
+            fields = [];
+            fields.push({ name: "Now playing:", value: fieldValues[0] });
+            
+            for (let i = 1; i < serverQueue.songs.length; i++)
+                fields.push({ name: `${i})`, value: fieldValues[i] });
+
+            const queueEmbed = new Discord.MessageEmbed()
+                .setColor('#202020')
+                .addFields(fields);
+
+            return sendMsg(queueEmbed, channel);
         }
     }
 });
