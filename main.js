@@ -188,6 +188,31 @@ client.on('message', async message => {
             return;
         }
 
+        else if (command.startsWith("current")) {
+            songLen = serverQueue.songs[0].lengthSeconds;
+
+            let seconds = songLen % 60;
+            let minutes = parseInt(songLen / 60) % 60;
+            let hours = parseInt(songLen / 3600);
+
+            let time = "";
+            if (hours != 0)   time += (hours.toString().length == 1 ? `0${hours}` : hours) + ":";
+            if (minutes != 0) time += (minutes.toString().length == 1 && hours != 0 ? `0${minutes}` : minutes) + ":";
+                              time += (seconds.toString().length == 1 && minutes != 0 ? `0${seconds}` : seconds);
+
+            const currentEmbed = new Discord.MessageEmbed()
+                .setColor('#30FF00')
+                .setTitle('Current song info')
+                .addFields(
+                    { name: "Title", value: `[${serverQueue.songs[0].title}](${serverQueue.songs[0].url})` },
+                    { name: "Author", value: serverQueue.songs[0].author, inline: true },
+                    { name: "Length", value: time, inline: true },
+                )
+                .setImage(serverQueue.songs[0].thumbnails[serverQueue.songs[0].thumbnails.length - 1].url);
+
+            return sendMsg(currentEmbed, channel);
+        }
+
         else if (command.startsWith("queue")) {
             if (!serverQueue) 
                 return sendMsg("There are no songs in the queue!", channel);
