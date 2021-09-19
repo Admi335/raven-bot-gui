@@ -57,7 +57,9 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
 
     console.log("Blacklisted phrases:");
 
-    rl.input.on('error', err => {});
+    rl.input.on('error', err => {
+        console.log("Failed to read file!\n" + err);
+    });
 
     rl.on('line', line => {
         line.trim();
@@ -73,22 +75,23 @@ const maxLength = -1; // Maximum amount of characters in a message
                       // In case you don't want to have a limit, set this to -1
 
 
+
 client.once('ready', () => {
     console.log('\nConnected!');
 });
 
 client.once('reconnecting', () => {
-    console.log('Reconnecting...');
+    console.log('\nReconnecting...');
 });
 
 client.once('disconnect', () => {
-    console.log('Disconnected!');
+    console.log('\nDisconnected!');
 });
 
 
 client.on('message', message => {
     const channel = message.channel;
-    const content = message.content.trim();
+    const content = message.content.toLowerCase().trim();
     const author = message.member;
 
     const voiceChannel = message.member.voice.channel;
@@ -96,14 +99,15 @@ client.on('message', message => {
 
     const serverQueue = musicFuncs.getQueue().get(message.guild.id);
 
-
+    // Message length
     if (content.length >= maxLength && maxLength != -1) {
         deleteMsg(message, `Your message is too long! ${author}`, channel);
         return;
     }
 
+    // Blacklist
     blacklistedPhrases.forEach(phrase => {
-        if (content.toLowerCase().includes(phrase)) {
+        if (content.includes(phrase)) {
             if ((content[content.indexOf(phrase) - 1] == ' ' ||
                 !content[content.indexOf(phrase) - 1])
                 &&
@@ -120,13 +124,16 @@ client.on('message', message => {
         }
     });
 
+    // Check if author is bot
     if (message.author.bot) return;
     
-    if (content.toLowerCase() == "prefix") {
+    // Send prefix
+    if (content == "prefix") {
         sendMsg(`My prefix is ${prefix}`, channel);
         return;
     }
 
+/* COMMANDS */
     else if (content.startsWith(prefix)) {
         let command = content.slice(prefix.length);
         let targetUser = message.mentions.members.first();
@@ -155,7 +162,6 @@ client.on('message', message => {
             return;
         }
 
-
     /* PLAYING MUSIC */
         else if (command.startsWith("play")) {
             if (!voiceChannel)
@@ -173,7 +179,7 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could skip!", channel);
 
-            serverQueue.connection.dispatcher.end();
+            musicFuncs.skip(serverQueue);
 
             sendMsg(`Current song has been skipped!`, channel)
 
@@ -187,8 +193,7 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could stop!", channel);
 
-            serverQueue.songs = [];
-            serverQueue.connection.dispatcher.end();
+            musicFuncs.stop(serverQueue);
 
             sendMsg(`Stopped playing songs!`, channel)
 
