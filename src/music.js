@@ -50,7 +50,8 @@ async function queueSong(message, url, serverQueue) {
         url: songInfo.video_url,
         lengthSeconds: songInfo.lengthSeconds,
         author: songAuthor,
-        requestAuthorID: message.author.id
+        requestAuthorID: message.author.id,
+        thumbnails: songInfo.thumbnails
     };
 
     // Create a queue if one doesn't exist
@@ -117,7 +118,7 @@ function play(guild, song) {
     const nowPlayingEmbed = new MessageEmbed()
         .setColor('#0099ff')
         .setTitle('Now playing')
-        .setDescription(`[${song.title}](${song.url}) by **${song.author}** [<@${song.requestAuthorID}>`);
+        .setDescription(`[${song.title}](${song.url}) by **${song.author}** [<@${song.requestAuthorID}>]`);
 
     sendMsg(nowPlayingEmbed, serverQueue.textChannel);
 }
