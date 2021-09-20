@@ -21,7 +21,7 @@ async function queueSong(message, url, serverQueue) {
     try {
         songInfo = (await ytdl.getInfo(url)).videoDetails;
     } catch (err) {
-        return sendMsg("This video is unavailable!", message.channel);
+        return sendMsg("Tak to nezahraju!", message.channel);
     }
 
     if (!songInfo) return;
