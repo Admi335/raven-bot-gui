@@ -1,6 +1,6 @@
 {
   "name": "raven-bot-gui",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "This program is a discord bot with a GUI, made using a module for Node.js, discord.js, that allows you to interact with the Discord API.",
   "main": "main.js",
   "scripts": {

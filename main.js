@@ -63,8 +63,21 @@ const client = new Discord.Client();
 
 
 // Bot settings
-const deletePhrases = true;  // Delete message if it includes a blacklisted phrase
-const banForPhrases = false; // Ban user if his message includes a blacklisted phrase
+const settings = new Map();
+
+fs.readFile('./settings.json', 'utf-8', (err, data) => {
+    if (err) 
+        return console.error("There was an error loading settings file\n" + err);
+
+    data = JSON.parse(data);
+
+    for (let i = 0; i < Object.keys(data).length; i++)
+        settings.set(Object.keys(data)[i], data[Object.keys(data)[i]]);
+
+    console.log(settings);
+});
+
+
 const blacklistedPhrases = [];
 
 fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
@@ -93,8 +106,19 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
     });
 });
 
-const maxLength = -1; // Maximum amount of characters in a message
-                      // In case you don't want to have a limit, set this to -1
+
+const commands = [
+    { name: 'help',     admin: false, description: `Shows this list\nUsage: \`${prefix}help\`` },
+    { name: 'set',      admin: true,  description: `Sets a setting\nUsage: \`${prefix}set exampleSetting "true"\`` },
+    { name: 'settings', admin: true,  description: `Shows the list of available settings\nUsage: \`${prefix}settings\`` },
+    { name: 'send',     admin: true,  description: `Sends a message to a channel (if not specified, it sends the message to the current channel)\nUsage: \`${prefix}send "example"\` or \`${prefix}send "example" #example-channel\`` },
+    { name: 'ban',      admin: true,  description: `Bans a user (optional: reason, channel whither the reason will be posted)\nUsage: \`${prefix}ban @example-user "Bad behavior" #bans\`` },
+    { name: 'play',     admin: false, description: `Plays a song from YouTube\nUsage: \`${prefix}play "https://youtu.be/AbC(123-4F"\`` },
+    { name: 'skip',     admin: false, description: `Skips the current song\nUsage: \`${prefix}skip\`` },
+    { name: 'stop',     admin: false, description: `Stops the bot from playing music\nUsage: \`${prefix}stop\`` },
+    { name: 'current',  admin: false, description: `Shows some info about the current song\nUsage: \`${prefix}current\`` },
+    { name: 'queue',    admin: false, description: `Show the list of queued songs\nUsage: \`${prefix}queue\`` }
+]
 
 
 
@@ -111,7 +135,17 @@ client.once('disconnect', () => {
 });
 
 
-client.on('message', async message => {
+client.on('message', message => {
+    if (message.author.bot) return; // Check if author is bot
+
+    if (!settings.has(message.guild.id)) {
+        settings.set(message.guild.id, {
+            maxMessageLength: -1,
+            deleteBannedPhrases: true,
+            banForBannedPhrases: false
+        });
+    }
+
     const channel = message.channel;
     const content = message.content.trim();
     const author = message.member;
@@ -119,10 +153,11 @@ client.on('message', async message => {
     const voiceChannel = message.member.voice.channel;
     //const VCpermissions = voiceChannel.permissionsFor(message.client.user);
 
+    const serverSettings = settings.get(message.guild.id);
     const serverQueue = musicFuncs.getQueue().get(message.guild.id);
 
     // Message length
-    if (content.length >= maxLength && maxLength != -1) {
+    if (content.length >= serverSettings.maxMessageLength && serverSettings.maxMessageLength != -1) {
         return deleteMsg(message, `Your message is too long! ${author}`, channel);
     }
 
@@ -134,19 +169,16 @@ client.on('message', async message => {
                 &&
                 (content[content.indexOf(phrase) + phrase.length] == ' ' ||
                 !content[content.indexOf(phrase) + phrase.length])) {
-                    if (deletePhrases)
+                    if (serverSettings.deleteBannedPhrases)
                         deleteMsg(message, `You wrote some bad words! ${author}`, channel);
                 
-                    if (banForPhrases)
+                    if (serverSettings.banForBannedPhrases)
                         banUser(author, `You wrote some bad words! ${author}`, author);
 
                     return;
             }
         }
     });
-
-    // Check if author is bot
-    if (message.author.bot) return;
     
     // Send prefix
     if (content.toLowerCase() == "prefix")
@@ -164,8 +196,63 @@ client.on('message', async message => {
             command[i].toLowerCase();
         }
 
-        if (command.startsWith("ban"))
-            return banUser(targetUser, targetString, targetChannel);
+        if (command.startsWith("help")) {
+            let commandsFields = [];
+
+            for (let i = 0; i < commands.length; i++) {
+                if (!commands[i].admin)
+                    commandsFields.push({ name: commands[i].name, value: commands[i].description });
+            }
+
+            const helpEmbed = new Discord.MessageEmbed()
+                .setColor('#FF0000')
+                .setTitle('Help')
+                .setDescription('List of all useful commands and their usage')
+                .addFields(
+                    { name: 'prefix', value: `Shows my command prefix\nUsage: \`prefix\`` },
+                    commandsFields
+                );
+            
+            return sendMsg(helpEmbed, channel);
+        }
+
+        else if (command.startsWith("adminHelp")) {
+            let commandsFields = [];
+
+            for (let i = 0; i < commands.length; i++) {
+                if (commands[i].admin)
+                    commandsFields.push({ name: commands[i].name, value: commands[i].description });
+            }
+
+            const helpEmbed = new Discord.MessageEmbed()
+                .setColor('#FF0000')
+                .setTitle('Help - Admin')
+                .setDescription('List of all useful **admin** commands and their usage')
+                .addFields(commandsFields);
+            
+            return sendMsg(helpEmbed, channel);
+        }
+
+        else if (command.startsWith("settings") || command.startsWith("options")) {
+            const settingsEmbed = new Discord.MessageEmbed()
+                .setColor('#FF6666')
+                .setTitle('Settings')
+                .setDescription('List of all settings available')
+                .addFields(
+                    { name: 'maxMessageLength',    value: `Maximum amount of characters a message can have (if you don\'t want a limit, set this to -1)\nCurrent: ${serverSettings.maxMessageLength}\nDefault: -1\nArguments: number <-1;∞>` },
+                    { name: 'deleteBannedPhrases', value: `Whether to delete a message if it includes a blacklisted phrase\nCurrent: ${serverSettings.deleteBannedPhrases}\nDefault: true\nArguments: "true" or "false"` },
+                    { name: 'banForBannedPhrases', value: `Whether to ban a user if his message includes a blacklisted phrase\nCurrent: ${serverSettings.banForBannedPhrases}\nDefault: false\nArguments: "true" or "false"` }
+                );
+
+            return sendMsg(settingsEmbed, channel);
+        }
+
+        else if (command.startsWith("ban")) {
+            if (!targetUser)         return sendMsg("You need to specify whom to ban!", channel);
+            else if (!targetString)  return banUser(targetUser);
+            else if (!targetChannel) return banUser(targetUser, targetString, channel);
+            else                     return banUser(targetUser, targetString, targetChannel);
+        }
 
         else if (command.startsWith("send")) {
             if (!targetString || targetString.length == 0)
@@ -180,9 +267,7 @@ client.on('message', async message => {
             if (!voiceChannel)
                 return sendMsg("You need to be in a voice channel to play music!", channel);
         
-            musicFuncs.queueSong(message, targetString, serverQueue);
-
-            return;
+            return musicFuncs.queueSong(message, targetString, serverQueue);
         }
 
         else if (command.startsWith("skip")) {
@@ -274,7 +359,62 @@ client.on('message', async message => {
 
             return sendMsg(queueEmbed, channel);
         }
+
+    /* SETTINGS */
+        else if (command.startsWith("set")) {
+            const setting = command.split(" ")[1];
+            let origValue;
+
+            if (!setting)
+                return sendMsg("You have to specify which setting you want to change!", channel);
+
+            if (setting == "maxMessageLength") {
+                if ((isNaN(targetString) && isNaN(parseFloat(targetString))) || parseInt(targetString) < -1)
+                    return sendMsg("This can only be set to a number higher or equal to -1!", channel);
+
+                origValue = serverSettings.maxMessageLength;
+                serverSettings.maxMessageLength = parseInt(targetString);
+            }  
+            else if (setting == "deleteBannedPhrases") {
+                if (targetString != "true" || targetString != "false")
+                    return sendMsg("This can only be set to true and false!", channel);
+
+                origValue = serverSettings.deleteBannedPhrases;
+                serverSettings.deleteBannedPhrases = targetString;
+            }
+            else if (setting == "banForBannedPhrases") {
+                if (targetString != "true" || targetString != "false")
+                    return sendMsg("This can only be set to true and false!", channel);
+                    
+                origValue = serverSettings.banForBannedPhrases;
+                serverSettings.banForBannedPhrases = targetString;
+            }
+            else {
+                return sendMsg(`${setting} does not exist!`, channel);
+            }
+
+            console.log(settings.get(message.guild.id));
+
+            sendMsg(`${setting} has been changed from "${origValue}" to "${targetString}"`, channel)
+                
+            return settings.set(message.guild.id, serverSettings);
+        }
     }
 });
 
 client.login(token);
+
+
+// Save settings on exit
+["exit", "SIGINT", "SIGUSR1", "SIGUSR2", "uncaughtException"].forEach(eventType => {
+    process.on(eventType, () => {
+        const settingsJSON = JSON.stringify(Object.fromEntries(settings));
+
+        fs.writeFileSync('./settings.json', settingsJSON, err => {
+            if (err)
+                return console.error("There was an error saving settings file!");
+        });
+
+        process.exit();
+    });
+});
