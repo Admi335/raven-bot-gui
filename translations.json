@@ -4,6 +4,8 @@
             "help": {
                 "title": "Help",
                 "description": "List of all useful commands and their usage",
+                "adminTitle": "Help - Admin",
+                "adminDescription": "List of all useful **admin** commands and their usage",
                 "fields": {
                     "usage": "Usage",
                     "prefix": "Shows my command prefix",
@@ -16,7 +18,8 @@
                     "skip": "Skips the current song",
                     "stop": "Stops the bot from playing music",
                     "current": "Shows some info about the current song",
-                    "queue": "Show the list of queued songs"
+                    "queue": "Show the list of queued songs",
+                    "lyrics": "Shows the lyrics for the current song"
                 }
             }
         }
@@ -27,6 +30,8 @@
             "help": {
                 "title": "Help",
                 "description": "Seznam všech užitečných příkazů a jejich užití",
+                "adminTitle": "Help - Admin",
+                "adminDescription": "Seznam všech užitečných **admin** příkazů a jejich užití",
                 "fields": {
                     "usage": "Použití",
                     "prefix": "Ukáže můj prefix",
@@ -39,7 +44,8 @@
                     "skip": "Přeskočí momentální píseň",
                     "stop": "Přestane hrát hudbu",
                     "current": "Ukáže nějaké info o momentální písni",
-                    "queue": "Ukáže seznam písní ve frontě"
+                    "queue": "Ukáže seznam písní ve frontě",
+                    "lyrics": "Ukáže text momentální písně"
                 }
             }
         }

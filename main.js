@@ -30,7 +30,6 @@ const musicFuncs = require('./src/music.js');
 
 const translations = require('./translations.json');
 
-
 /*-----------------------------------------------------*/
 /*-------------------- DISCORD BOT --------------------*/
 /*-----------------------------------------------------*/
@@ -99,7 +98,7 @@ client.once('disconnect', () => {
 });
 
 
-client.on('message', message => {
+client.on('message', async message => {
     if (message.author.bot) return; // Check if author is bot
 
     if (!settings.has(message.guild.id)) {
@@ -162,7 +161,7 @@ client.on('message', message => {
             command[i].toLowerCase();
         }
 
-        if (command.startsWith("help")) {
+        if (command.startsWith("help") || command.startsWith("adminHelp")) {
             const helpTranslation = serverLang.embeds.help;
             const descriptions = helpTranslation.fields;
 
@@ -173,41 +172,40 @@ client.on('message', message => {
                 { name: 'settings', admin: true,  description: `${descriptions.settings + '\n' + descriptions.usage}: \`${prefix}settings\`` },
                 { name: 'send',     admin: true,  description: `${descriptions.send + '\n' + descriptions.usage}: \`${prefix}send "example"\` or \`${prefix}send "example" #example-channel\`` },
                 { name: 'ban',      admin: true,  description: `${descriptions.ban + '\n' + descriptions.usage}: \`${prefix}ban @example-user "Bad behavior" #bans\`` },
-                { name: 'play',     admin: false, description: `${descriptions.play + '\n' + descriptions.usage}: \`${prefix}play "https://youtu.be/AbC(123-4F"\`` },
+                { name: 'play',     admin: false, description: `${descriptions.play + '\n' + descriptions.usage}: \`${prefix}play "https://youtu.be/dQw4w9WgXcQ"\`` },
                 { name: 'skip',     admin: false, description: `${descriptions.skip + '\n' + descriptions.usage}\: \`${prefix}skip\`` },
                 { name: 'stop',     admin: false, description: `${descriptions.stop + '\n' + descriptions.usage}: \`${prefix}stop\`` },
                 { name: 'current',  admin: false, description: `${descriptions.current + '\n' + descriptions.usage}\: \`${prefix}current\`` },
-                { name: 'queue',    admin: false, description: `${descriptions.queue + '\n' + descriptions.usage}: \`${prefix}queue\`` }
+                { name: 'queue',    admin: false, description: `${descriptions.queue + '\n' + descriptions.usage}: \`${prefix}queue\`` },
+                { name: 'lyrics',   admin: false, description: `${descriptions.lyrics + '\n' + descriptions.usage}: \`${prefix}lyrics\`` }
             ]
 
             let commandsFields = [];
+            let embedTitle, embedDescription;
 
-            for (let i = 0; i < commands.length; i++) {
-                if (!commands[i].admin)
-                    commandsFields.push({ name: commands[i].name, value: commands[i].description });
+            if (command.startsWith("help")) {
+                for (let i = 0; i < commands.length; i++) {
+                    if (!commands[i].admin)
+                        commandsFields.push({ name: commands[i].name, value: commands[i].description });
+                }
+
+                embedTitle = helpTranslation.title;
+                embedDescription = helpTranslation.description;
+            }
+            else {
+                for (let i = 0; i < commands.length; i++) {
+                    if (commands[i].admin)
+                        commandsFields.push({ name: commands[i].name, value: commands[i].description });
+                }
+
+                embedTitle = helpTranslation.adminTitle;
+                embedDescription = helpTranslation.adminDescription;
             }
 
             const helpEmbed = new Discord.MessageEmbed()
                 .setColor('#FF0000')
-                .setTitle(helpTranslation.title)
-                .setDescription(helpTranslation.description)
-                .addFields(commandsFields);
-            
-            return sendMsg(helpEmbed, channel);
-        }
-
-        else if (command.startsWith("adminHelp")) {
-            let commandsFields = [];
-
-            for (let i = 0; i < commands.length; i++) {
-                if (commands[i].admin)
-                    commandsFields.push({ name: commands[i].name, value: commands[i].description });
-            }
-
-            const helpEmbed = new Discord.MessageEmbed()
-                .setColor('#FF0000')
-                .setTitle('Help - Admin')
-                .setDescription('List of all useful **admin** commands and their usage')
+                .setTitle(embedTitle)
+                .setDescription(embedDescription)
                 .addFields(commandsFields);
             
             return sendMsg(helpEmbed, channel);
@@ -258,10 +256,7 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could skip!", channel);
 
-            musicFuncs.skip(serverQueue);
-            sendMsg(`Current song has been skipped!`, channel)
-
-            return;
+            return musicFuncs.skipSong(serverQueue, channel);
         }
 
         else if (command.startsWith("stop")) {
@@ -271,74 +266,25 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could stop!", channel);
 
-            musicFuncs.stop(serverQueue);
-            sendMsg(`Stopped playing songs!`, channel)
-
-            return;
+            return musicFuncs.stopPlaying(serverQueue, channel);
         }
 
         else if (command.startsWith("current")) {
-            songLen = serverQueue.songs[0].lengthSeconds;
-
-            let seconds = songLen % 60;
-            let minutes = parseInt(songLen / 60) % 60;
-            let hours = parseInt(songLen / 3600);
-
-            let time = "";
-            if (hours != 0)   time += (hours.toString().length == 1 ? `0${hours}` : hours) + ":";
-            if (minutes != 0) time += (minutes.toString().length == 1 && hours != 0 ? `0${minutes}` : minutes) + ":";
-                              time += (seconds.toString().length == 1 && minutes != 0 ? `0${seconds}` : seconds);
-
-            const currentEmbed = new Discord.MessageEmbed()
-                .setColor('#30FF00')
-                .setTitle('Current song info')
-                .addFields(
-                    { name: "Title", value: `[${serverQueue.songs[0].title}](${serverQueue.songs[0].url})` },
-                    { name: "Author", value: serverQueue.songs[0].author, inline: true },
-                    { name: "Length", value: time, inline: true },
-                )
-                .setImage(serverQueue.songs[0].thumbnails[serverQueue.songs[0].thumbnails.length - 1].url);
-
-            return sendMsg(currentEmbed, channel);
+            if (!serverQueue)
+                return sendMsg("There is no song to skip!", channel);
+                
+            return musicFuncs.getCurrentSong(serverQueue, channel);
         }
 
         else if (command.startsWith("queue")) {
             if (!serverQueue) 
                 return sendMsg("There are no songs in the queue!", channel);
             
-            let fieldValues = [];
+            return musicFuncs.getQueuedSongs(serverQueue, channel);
+        }
 
-            for (let i = 0; i < serverQueue.songs.length; i++) {
-                songLen = serverQueue.songs[i].lengthSeconds;
-
-                let seconds = songLen % 60;
-                let minutes = parseInt(songLen / 60) % 60;
-                let hours = parseInt(songLen / 3600);
-
-                let songName = serverQueue.songs[i].title;
-                let songURL = serverQueue.songs[i].url;
-
-                if (songName.length > 50) fieldValues[i] = `[${songName.substr(0, 46)}](${songURL})...`;
-                else                      fieldValues[i] = `[${songName}](${songURL})`;
-
-                fieldValues[i] += ` by **${serverQueue.songs[i].author}** - `;
-
-                if (hours != 0)   fieldValues[i] += (hours.toString().length == 1 ? `0${hours}` : hours) + ":";
-                if (minutes != 0) fieldValues[i] += (minutes.toString().length == 1 && hours != 0 ? `0${minutes}` : minutes) + ":";  
-                                  fieldValues[i] += (seconds.toString().length == 1 && minutes != 0 ? `0${seconds}` : seconds);
-            }
-            
-            fields = [];
-            fields.push({ name: "Now playing:", value: fieldValues[0] });
-            
-            for (let i = 1; i < serverQueue.songs.length; i++)
-                fields.push({ name: `${i})`, value: fieldValues[i] });
-
-            const queueEmbed = new Discord.MessageEmbed()
-                .setColor('#202020')
-                .addFields(fields);
-
-            return sendMsg(queueEmbed, channel);
+        else if (command.startsWith("lyrics")) {
+            return musicFuncs.getLyrics(serverQueue, channel);            
         }
 
     /* SETTINGS */
