@@ -28,6 +28,8 @@ const sendMsg = require('./src/sendMsg.js');
 
 const musicFuncs = require('./src/music.js');
 
+const translations = require('./translations.json');
+
 
 /*-----------------------------------------------------*/
 /*-------------------- DISCORD BOT --------------------*/
@@ -59,7 +61,7 @@ const blacklistedPhrases = [];
 
 fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
     if (err) {
-        return console.log("Blacklist of phrases doesn't exist");
+        return console.log("\nBlacklist of phrases doesn't exist");
     }
 
     let rl = readline.createInterface({
@@ -67,7 +69,7 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
         crlfDelay: Infinity
     });
 
-    console.log("Blacklisted phrases:");
+    console.log("\nBlacklisted phrases:");
 
     rl.input.on('error', err => {
         console.log("Failed to read file!\n" + err);
@@ -82,21 +84,6 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
         }
     });
 });
-
-
-const commands = [
-    { name: 'help',     admin: false, description: `Shows this list\nUsage: \`${prefix}help\`` },
-    { name: 'set',      admin: true,  description: `Sets a setting\nUsage: \`${prefix}set exampleSetting "true"\`` },
-    { name: 'settings', admin: true,  description: `Shows the list of available settings\nUsage: \`${prefix}settings\`` },
-    { name: 'send',     admin: true,  description: `Sends a message to a channel (if not specified, it sends the message to the current channel)\nUsage: \`${prefix}send "example"\` or \`${prefix}send "example" #example-channel\`` },
-    { name: 'ban',      admin: true,  description: `Bans a user (optional: reason, channel whither the reason will be posted)\nUsage: \`${prefix}ban @example-user "Bad behavior" #bans\`` },
-    { name: 'play',     admin: false, description: `Plays a song from YouTube\nUsage: \`${prefix}play "https://youtu.be/AbC(123-4F"\`` },
-    { name: 'skip',     admin: false, description: `Skips the current song\nUsage: \`${prefix}skip\`` },
-    { name: 'stop',     admin: false, description: `Stops the bot from playing music\nUsage: \`${prefix}stop\`` },
-    { name: 'current',  admin: false, description: `Shows some info about the current song\nUsage: \`${prefix}current\`` },
-    { name: 'queue',    admin: false, description: `Show the list of queued songs\nUsage: \`${prefix}queue\`` }
-]
-
 
 
 client.once('ready', () => {
@@ -117,6 +104,7 @@ client.on('message', message => {
 
     if (!settings.has(message.guild.id)) {
         settings.set(message.guild.id, {
+            language: "en",
             maxMessageLength: -1,
             deleteBannedPhrases: true,
             banForBannedPhrases: false
@@ -132,6 +120,7 @@ client.on('message', message => {
 
     const serverSettings = settings.get(message.guild.id);
     const serverQueue = musicFuncs.getQueue().get(message.guild.id);
+    const serverLang = translations[serverSettings.language];
 
     // Message length
     if (content.length >= serverSettings.maxMessageLength && serverSettings.maxMessageLength != -1) {
@@ -174,6 +163,23 @@ client.on('message', message => {
         }
 
         if (command.startsWith("help")) {
+            const helpTranslation = serverLang.embeds.help;
+            const descriptions = helpTranslation.fields;
+
+            const commands = [
+                { name: 'prefix',   admin: false, description: `${descriptions.prefix + '\n' + descriptions.usage}: \`prefix\``},
+                { name: 'help',     admin: false, description: `${descriptions.help + '\n' + descriptions.usage}: \`${prefix}help\`` },
+                { name: 'set',      admin: true,  description: `${descriptions.set + '\n' + descriptions.usage}: \`${prefix}set exampleSetting "true"\`` },
+                { name: 'settings', admin: true,  description: `${descriptions.settings + '\n' + descriptions.usage}: \`${prefix}settings\`` },
+                { name: 'send',     admin: true,  description: `${descriptions.send + '\n' + descriptions.usage}: \`${prefix}send "example"\` or \`${prefix}send "example" #example-channel\`` },
+                { name: 'ban',      admin: true,  description: `${descriptions.ban + '\n' + descriptions.usage}: \`${prefix}ban @example-user "Bad behavior" #bans\`` },
+                { name: 'play',     admin: false, description: `${descriptions.play + '\n' + descriptions.usage}: \`${prefix}play "https://youtu.be/AbC(123-4F"\`` },
+                { name: 'skip',     admin: false, description: `${descriptions.skip + '\n' + descriptions.usage}\: \`${prefix}skip\`` },
+                { name: 'stop',     admin: false, description: `${descriptions.stop + '\n' + descriptions.usage}: \`${prefix}stop\`` },
+                { name: 'current',  admin: false, description: `${descriptions.current + '\n' + descriptions.usage}\: \`${prefix}current\`` },
+                { name: 'queue',    admin: false, description: `${descriptions.queue + '\n' + descriptions.usage}: \`${prefix}queue\`` }
+            ]
+
             let commandsFields = [];
 
             for (let i = 0; i < commands.length; i++) {
@@ -183,12 +189,9 @@ client.on('message', message => {
 
             const helpEmbed = new Discord.MessageEmbed()
                 .setColor('#FF0000')
-                .setTitle('Help')
-                .setDescription('List of all useful commands and their usage')
-                .addFields(
-                    { name: 'prefix', value: `Shows my command prefix\nUsage: \`prefix\`` },
-                    commandsFields
-                );
+                .setTitle(helpTranslation.title)
+                .setDescription(helpTranslation.description)
+                .addFields(commandsFields);
             
             return sendMsg(helpEmbed, channel);
         }
@@ -216,6 +219,7 @@ client.on('message', message => {
                 .setTitle('Settings')
                 .setDescription('List of all settings available')
                 .addFields(
+                    { name: 'language',            value: `Language in which you want the bot to communicate with you\nCurrent: ${serverSettings.language}\nDefault: en\nArguments: "en" or "cs"` },
                     { name: 'maxMessageLength',    value: `Maximum amount of characters a message can have (if you don\'t want a limit, set this to -1)\nCurrent: ${serverSettings.maxMessageLength}\nDefault: -1\nArguments: number <-1;∞>` },
                     { name: 'deleteBannedPhrases', value: `Whether to delete a message if it includes a blacklisted phrase\nCurrent: ${serverSettings.deleteBannedPhrases}\nDefault: true\nArguments: "true" or "false"` },
                     { name: 'banForBannedPhrases', value: `Whether to ban a user if his message includes a blacklisted phrase\nCurrent: ${serverSettings.banForBannedPhrases}\nDefault: false\nArguments: "true" or "false"` }
@@ -345,7 +349,23 @@ client.on('message', message => {
             if (!setting)
                 return sendMsg("You have to specify which setting you want to change!", channel);
 
-            if (setting == "maxMessageLength") {
+            if (setting == "language") {
+                let lang;
+
+                for (let i = 0; i < Object.keys(translations).length; i++) {
+                    if (targetString == Object.keys(translations)[i]) {
+                        lang = targetString;
+                    }
+                }
+
+                if (!lang) {
+                    return sendMsg("This language does not exist!", channel);
+                }
+
+                origValue = serverSettings.language;
+                serverSettings.language = targetString;
+            }
+            else if (setting == "maxMessageLength") {
                 if ((isNaN(targetString) && isNaN(parseFloat(targetString))) || parseInt(targetString) < -1)
                     return sendMsg("This can only be set to a number higher or equal to -1!", channel);
 
