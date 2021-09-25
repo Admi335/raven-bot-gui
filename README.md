@@ -85,7 +85,7 @@ git clone https://github.com/Admi335/Discord-bot.git
 3. Install the modules
 
 ```bash
-npm install discord.js express ffmpeg fluent-ffmpeg @discordjs/opus ytdl-core
+npm install discord.js express ffmpeg fluent-ffmpeg @discordjs/opus ytdl-core genius-lyrics
 ```
 
 ## Deployment
@@ -143,8 +143,12 @@ To access the GUI, open your web browser and paste in this address: 127.0.0.1:30
 
 ## Built With
 
-* [Node.js](https://nodejs.org/en/) - JavaScript runtime environment
-* [discord.js](https://discord.js.org/#/) - Node.js module used for interacting with the Discord API
+* [Node.js](https://nodejs.org/) - JavaScript runtime environment
+* [Express](https://express.js.com/) - Web framework for Node.js
+* [discord.js](https://discord.js.org/) - Node.js module used for interacting with the Discord API
+* [ytdl](https://www.npmjs.com/package/ytdl) - YouTube downloader written in JavaScript
+* [FFmpeg](https://ffmpeg.org/) - Complete, cross-platform solution to record, convert and stream audio and video
+* [genius-lyrics](https://www.npmjs.com/package/genius-lyrics) - Simple lyrics fetcher that uses [Genius](https://genius.com/))
 
 ## Authors
 

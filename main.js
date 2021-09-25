@@ -28,6 +28,7 @@ const sendMsg = require('./src/sendMsg.js');
 
 const musicFuncs = require('./src/music.js');
 
+const translations = require('./translations.json');
 
 /*----------------------------------------------------*/
 /*-------------------- WEB SERVER --------------------*/
@@ -82,7 +83,7 @@ const blacklistedPhrases = [];
 
 fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
     if (err) {
-        return console.log("Blacklist of phrases doesn't exist");
+        return console.log("\nBlacklist of phrases doesn't exist");
     }
 
     let rl = readline.createInterface({
@@ -90,7 +91,7 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
         crlfDelay: Infinity
     });
 
-    console.log("Blacklisted phrases:");
+    console.log("\nBlacklisted phrases:");
 
     rl.input.on('error', err => {
         console.log("Failed to read file!\n" + err);
@@ -107,21 +108,6 @@ fs.access('./phrases_blacklist.txt', fs.F_OK, err => {
 });
 
 
-const commands = [
-    { name: 'help',     admin: false, description: `Shows this list\nUsage: \`${prefix}help\`` },
-    { name: 'set',      admin: true,  description: `Sets a setting\nUsage: \`${prefix}set exampleSetting "true"\`` },
-    { name: 'settings', admin: true,  description: `Shows the list of available settings\nUsage: \`${prefix}settings\`` },
-    { name: 'send',     admin: true,  description: `Sends a message to a channel (if not specified, it sends the message to the current channel)\nUsage: \`${prefix}send "example"\` or \`${prefix}send "example" #example-channel\`` },
-    { name: 'ban',      admin: true,  description: `Bans a user (optional: reason, channel whither the reason will be posted)\nUsage: \`${prefix}ban @example-user "Bad behavior" #bans\`` },
-    { name: 'play',     admin: false, description: `Plays a song from YouTube\nUsage: \`${prefix}play "https://youtu.be/AbC(123-4F"\`` },
-    { name: 'skip',     admin: false, description: `Skips the current song\nUsage: \`${prefix}skip\`` },
-    { name: 'stop',     admin: false, description: `Stops the bot from playing music\nUsage: \`${prefix}stop\`` },
-    { name: 'current',  admin: false, description: `Shows some info about the current song\nUsage: \`${prefix}current\`` },
-    { name: 'queue',    admin: false, description: `Show the list of queued songs\nUsage: \`${prefix}queue\`` }
-]
-
-
-
 client.once('ready', () => {
     console.log('\nConnected!');
 });
@@ -135,11 +121,12 @@ client.once('disconnect', () => {
 });
 
 
-client.on('message', message => {
+client.on('message', async message => {
     if (message.author.bot) return; // Check if author is bot
 
     if (!settings.has(message.guild.id)) {
         settings.set(message.guild.id, {
+            language: "en",
             maxMessageLength: -1,
             deleteBannedPhrases: true,
             banForBannedPhrases: false
@@ -155,6 +142,7 @@ client.on('message', message => {
 
     const serverSettings = settings.get(message.guild.id);
     const serverQueue = musicFuncs.getQueue().get(message.guild.id);
+    const serverLang = translations[serverSettings.language];
 
     // Message length
     if (content.length >= serverSettings.maxMessageLength && serverSettings.maxMessageLength != -1) {
@@ -196,38 +184,51 @@ client.on('message', message => {
             command[i].toLowerCase();
         }
 
-        if (command.startsWith("help")) {
-            let commandsFields = [];
+        if (command.startsWith("help") || command.startsWith("adminHelp")) {
+            const helpTranslation = serverLang.embeds.help;
+            const descriptions = helpTranslation.fields;
 
-            for (let i = 0; i < commands.length; i++) {
-                if (!commands[i].admin)
-                    commandsFields.push({ name: commands[i].name, value: commands[i].description });
+            const commands = [
+                { name: 'prefix',   admin: false, description: `${descriptions.prefix + '\n' + descriptions.usage}: \`prefix\``},
+                { name: 'help',     admin: false, description: `${descriptions.help + '\n' + descriptions.usage}: \`${prefix}help\`` },
+                { name: 'set',      admin: true,  description: `${descriptions.set + '\n' + descriptions.usage}: \`${prefix}set exampleSetting "true"\`` },
+                { name: 'settings', admin: true,  description: `${descriptions.settings + '\n' + descriptions.usage}: \`${prefix}settings\`` },
+                { name: 'send',     admin: true,  description: `${descriptions.send + '\n' + descriptions.usage}: \`${prefix}send "example"\` or \`${prefix}send "example" #example-channel\`` },
+                { name: 'ban',      admin: true,  description: `${descriptions.ban + '\n' + descriptions.usage}: \`${prefix}ban @example-user "Bad behavior" #bans\`` },
+                { name: 'play',     admin: false, description: `${descriptions.play + '\n' + descriptions.usage}: \`${prefix}play "https://youtu.be/dQw4w9WgXcQ"\`` },
+                { name: 'skip',     admin: false, description: `${descriptions.skip + '\n' + descriptions.usage}\: \`${prefix}skip\`` },
+                { name: 'stop',     admin: false, description: `${descriptions.stop + '\n' + descriptions.usage}: \`${prefix}stop\`` },
+                { name: 'current',  admin: false, description: `${descriptions.current + '\n' + descriptions.usage}\: \`${prefix}current\`` },
+                { name: 'queue',    admin: false, description: `${descriptions.queue + '\n' + descriptions.usage}: \`${prefix}queue\`` },
+                { name: 'lyrics',   admin: false, description: `${descriptions.lyrics + '\n' + descriptions.usage}: \`${prefix}lyrics\`` }
+            ]
+
+            let commandsFields = [];
+            let embedTitle, embedDescription;
+
+            if (command.startsWith("help")) {
+                for (let i = 0; i < commands.length; i++) {
+                    if (!commands[i].admin)
+                        commandsFields.push({ name: commands[i].name, value: commands[i].description });
+                }
+
+                embedTitle = helpTranslation.title;
+                embedDescription = helpTranslation.description;
+            }
+            else {
+                for (let i = 0; i < commands.length; i++) {
+                    if (commands[i].admin)
+                        commandsFields.push({ name: commands[i].name, value: commands[i].description });
+                }
+
+                embedTitle = helpTranslation.adminTitle;
+                embedDescription = helpTranslation.adminDescription;
             }
 
             const helpEmbed = new Discord.MessageEmbed()
                 .setColor('#FF0000')
-                .setTitle('Help')
-                .setDescription('List of all useful commands and their usage')
-                .addFields(
-                    { name: 'prefix', value: `Shows my command prefix\nUsage: \`prefix\`` },
-                    commandsFields
-                );
-            
-            return sendMsg(helpEmbed, channel);
-        }
-
-        else if (command.startsWith("adminHelp")) {
-            let commandsFields = [];
-
-            for (let i = 0; i < commands.length; i++) {
-                if (commands[i].admin)
-                    commandsFields.push({ name: commands[i].name, value: commands[i].description });
-            }
-
-            const helpEmbed = new Discord.MessageEmbed()
-                .setColor('#FF0000')
-                .setTitle('Help - Admin')
-                .setDescription('List of all useful **admin** commands and their usage')
+                .setTitle(embedTitle)
+                .setDescription(embedDescription)
                 .addFields(commandsFields);
             
             return sendMsg(helpEmbed, channel);
@@ -239,6 +240,7 @@ client.on('message', message => {
                 .setTitle('Settings')
                 .setDescription('List of all settings available')
                 .addFields(
+                    { name: 'language',            value: `Language in which you want the bot to communicate with you\nCurrent: ${serverSettings.language}\nDefault: en\nArguments: "en" or "cs"` },
                     { name: 'maxMessageLength',    value: `Maximum amount of characters a message can have (if you don\'t want a limit, set this to -1)\nCurrent: ${serverSettings.maxMessageLength}\nDefault: -1\nArguments: number <-1;∞>` },
                     { name: 'deleteBannedPhrases', value: `Whether to delete a message if it includes a blacklisted phrase\nCurrent: ${serverSettings.deleteBannedPhrases}\nDefault: true\nArguments: "true" or "false"` },
                     { name: 'banForBannedPhrases', value: `Whether to ban a user if his message includes a blacklisted phrase\nCurrent: ${serverSettings.banForBannedPhrases}\nDefault: false\nArguments: "true" or "false"` }
@@ -277,10 +279,7 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could skip!", channel);
 
-            musicFuncs.skip(serverQueue);
-            sendMsg(`Current song has been skipped!`, channel)
-
-            return;
+            return musicFuncs.skipSong(serverQueue, channel);
         }
 
         else if (command.startsWith("stop")) {
@@ -290,74 +289,25 @@ client.on('message', message => {
             if (!serverQueue)
                 return sendMsg("There is no song that I could stop!", channel);
 
-            musicFuncs.stop(serverQueue);
-            sendMsg(`Stopped playing songs!`, channel)
-
-            return;
+            return musicFuncs.stopPlaying(serverQueue, channel);
         }
 
         else if (command.startsWith("current")) {
-            songLen = serverQueue.songs[0].lengthSeconds;
-
-            let seconds = songLen % 60;
-            let minutes = parseInt(songLen / 60) % 60;
-            let hours = parseInt(songLen / 3600);
-
-            let time = "";
-            if (hours != 0)   time += (hours.toString().length == 1 ? `0${hours}` : hours) + ":";
-            if (minutes != 0) time += (minutes.toString().length == 1 && hours != 0 ? `0${minutes}` : minutes) + ":";
-                              time += (seconds.toString().length == 1 && minutes != 0 ? `0${seconds}` : seconds);
-
-            const currentEmbed = new Discord.MessageEmbed()
-                .setColor('#30FF00')
-                .setTitle('Current song info')
-                .addFields(
-                    { name: "Title", value: `[${serverQueue.songs[0].title}](${serverQueue.songs[0].url})` },
-                    { name: "Author", value: serverQueue.songs[0].author, inline: true },
-                    { name: "Length", value: time, inline: true },
-                )
-                .setImage(serverQueue.songs[0].thumbnails[serverQueue.songs[0].thumbnails.length - 1].url);
-
-            return sendMsg(currentEmbed, channel);
+            if (!serverQueue)
+                return sendMsg("There is no song to skip!", channel);
+                
+            return musicFuncs.getCurrentSong(serverQueue, channel);
         }
 
         else if (command.startsWith("queue")) {
             if (!serverQueue) 
                 return sendMsg("There are no songs in the queue!", channel);
             
-            let fieldValues = [];
+            return musicFuncs.getQueuedSongs(serverQueue, channel);
+        }
 
-            for (let i = 0; i < serverQueue.songs.length; i++) {
-                songLen = serverQueue.songs[i].lengthSeconds;
-
-                let seconds = songLen % 60;
-                let minutes = parseInt(songLen / 60) % 60;
-                let hours = parseInt(songLen / 3600);
-
-                let songName = serverQueue.songs[i].title;
-                let songURL = serverQueue.songs[i].url;
-
-                if (songName.length > 50) fieldValues[i] = `[${songName.substr(0, 46)}](${songURL})...`;
-                else                      fieldValues[i] = `[${songName}](${songURL})`;
-
-                fieldValues[i] += ` by **${serverQueue.songs[i].author}** - `;
-
-                if (hours != 0)   fieldValues[i] += (hours.toString().length == 1 ? `0${hours}` : hours) + ":";
-                if (minutes != 0) fieldValues[i] += (minutes.toString().length == 1 && hours != 0 ? `0${minutes}` : minutes) + ":";  
-                                  fieldValues[i] += (seconds.toString().length == 1 && minutes != 0 ? `0${seconds}` : seconds);
-            }
-            
-            fields = [];
-            fields.push({ name: "Now playing:", value: fieldValues[0] });
-            
-            for (let i = 1; i < serverQueue.songs.length; i++)
-                fields.push({ name: `${i})`, value: fieldValues[i] });
-
-            const queueEmbed = new Discord.MessageEmbed()
-                .setColor('#202020')
-                .addFields(fields);
-
-            return sendMsg(queueEmbed, channel);
+        else if (command.startsWith("lyrics")) {
+            return musicFuncs.getLyrics(serverQueue, channel);            
         }
 
     /* SETTINGS */
@@ -368,7 +318,23 @@ client.on('message', message => {
             if (!setting)
                 return sendMsg("You have to specify which setting you want to change!", channel);
 
-            if (setting == "maxMessageLength") {
+            if (setting == "language") {
+                let lang;
+
+                for (let i = 0; i < Object.keys(translations).length; i++) {
+                    if (targetString == Object.keys(translations)[i]) {
+                        lang = targetString;
+                    }
+                }
+
+                if (!lang) {
+                    return sendMsg("This language does not exist!", channel);
+                }
+
+                origValue = serverSettings.language;
+                serverSettings.language = targetString;
+            }
+            else if (setting == "maxMessageLength") {
                 if ((isNaN(targetString) && isNaN(parseFloat(targetString))) || parseInt(targetString) < -1)
                     return sendMsg("This can only be set to a number higher or equal to -1!", channel);
 
